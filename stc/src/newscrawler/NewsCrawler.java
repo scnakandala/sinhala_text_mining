@@ -18,6 +18,10 @@ public class NewsCrawler {
     private static Connection connection;
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+        // to connect from inside the campus network
+        //System.setProperty("http.proxyHost", "cache.mrt.ac.lk");
+        //System.setProperty("http.proxyPort", "3128");
+        
         Class.forName("com.mysql.jdbc.Driver");
         NewsCrawler.connection = DriverManager
                 .getConnection("jdbc:mysql://localhost/stc?useUnicode=true&characterEncoding=utf-8",
