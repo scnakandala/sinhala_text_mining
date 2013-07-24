@@ -1,7 +1,5 @@
 package newscrawler;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,15 +9,25 @@ import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class NewsCrawler {
 
-    public static void main(String[] args) throws IOException {
+    private static Connection connection;
+
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+        Class.forName("com.mysql.jdbc.Driver");
+        NewsCrawler.connection = DriverManager
+                .getConnection("jdbc:mysql://localhost/stc?useUnicode=true&characterEncoding=utf-8",
+                "root", "");
+
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 NewsCrawler crawler = new NewsCrawler();
-                NewsPaper paper = new Derana();
+                NewsPaper paper = new Derana(NewsCrawler.connection);
                 try {
                     crawler.crawl(paper);
                 } catch (IOException ex) {
@@ -32,7 +40,7 @@ public class NewsCrawler {
             @Override
             public void run() {
                 NewsCrawler crawler = new NewsCrawler();
-                NewsPaper paper = new CNews();
+                NewsPaper paper = new CNews(NewsCrawler.connection);
                 try {
                     crawler.crawl(paper);
                 } catch (IOException ex) {
@@ -45,7 +53,7 @@ public class NewsCrawler {
             @Override
             public void run() {
                 NewsCrawler crawler = new NewsCrawler();
-                NewsPaper paper = new NewsFirst();
+                NewsPaper paper = new NewsFirst(NewsCrawler.connection);
                 try {
                     crawler.crawl(paper);
                 } catch (IOException ex) {
@@ -68,7 +76,7 @@ public class NewsCrawler {
 
     public void crawl(NewsPaper paper) throws IOException {
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(paper.fileName));
+        //BufferedWriter writer = new BufferedWriter(new FileWriter(paper.fileName));
 
         for (int i = paper.startId; i <= paper.endId; i++) {
             try {
@@ -83,30 +91,21 @@ public class NewsCrawler {
                 if (paper.titleClass.length() > 0) {
                     Elements title = doc.select(paper.titleClass);
                     if (title.size() > 0) {
-                        titleS = title.get(0).text();
-                        titleS = titleS.replaceAll("<.*?>", "");
-                        titleS = titleS.replaceAll("</.*?>", "");
-                        titleS = titleS.replaceAll("<.*?/>", "");
+                        titleS = removeTags(title.get(0).text());
                     }
                 }
 
                 if (paper.dateClass.length() > 0) {
                     Elements date = doc.select(paper.dateClass);
                     if (date.size() > 0) {
-                        dateS = date.get(0).text();
-                        dateS = dateS.replaceAll("<.*?>", "");
-                        dateS = dateS.replaceAll("</.*?>", "");
-                        dateS = dateS.replaceAll("<.*?/>", "");
+                        dateS = removeTags(date.get(0).text());
                     }
                 }
 
                 if (paper.contentClass.length() > 0) {
                     Elements content = doc.select(paper.contentClass);
                     if (content.size() > 0) {
-                        contentS = content.get(0).text();
-                        contentS = contentS.replaceAll("<.*?>", "");
-                        contentS = contentS.replaceAll("</.*?>", "");
-                        contentS = contentS.replaceAll("<.*?/>", "");
+                        contentS = removeTags(content.get(0).text());
                     }
                 }
 
@@ -115,16 +114,29 @@ public class NewsCrawler {
                     continue;
                 }
 
-                String temp = titleS + "\n" + dateS + "\n" + contentS + "\n\n";
-                writer.write(temp);
-                writer.flush();
+                // for file write
+                //String temp = titleS + "\n" + dateS + "\n" + contentS + "\n\n";
+                //writer.write(temp);
+                //writer.flush();
+
+                // for databse write
+                paper.writeToDatabase(paper.baseUrl+i, titleS, dateS, contentS);
+
                 System.out.println("Valid URL: " + paper.baseUrl + i);
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("Invalid URL: " + paper.baseUrl + i);
             }
         }
 
-        writer.close();
+        //writer.close();
+    }
+
+    public static String removeTags(String text) {
+        text = text.replaceAll("<.*?>", "");
+        text = text.replaceAll("</.*?>", "");
+        text = text.replaceAll("<.*?/>", "");
+
+        return text;
     }
 }

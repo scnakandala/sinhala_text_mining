@@ -1,11 +1,13 @@
 package newscrawler;
 
+import java.sql.Connection;
+
 public class Derana extends NewsPaper {
 
-    public Derana() {
+    public Derana(Connection con) {
         super("http://sinhala.adaderana.lk/news.php?nid=",
             "h2.completeNewsTitle", "p.newsDateStamp", "div.newsContent",
-            6000, 35376, "derana_out.txt"
+            6000, 40000, "derana_out.txt", con, "ada_derana"
         );
     }
 }

@@ -5,3 +5,4 @@
 *.war
 *.ear
 /stc/nbproject/private/
+/stc/build/
