@@ -42,7 +42,8 @@ public class NewsPaper {
             ResultSet resultset = statement.executeQuery(query);
             if (resultset.next()) {
                 startId = resultset.getString("max") == null
-                        ? startId : (Integer.parseInt(resultset.getString("max")+1));
+                        ? startId : Integer.parseInt(resultset.getString("max"));
+                startId++;
             }
         } catch (SQLException ex) {
             Logger.getLogger(NewsPaper.class.getName()).log(Level.SEVERE, null, ex);

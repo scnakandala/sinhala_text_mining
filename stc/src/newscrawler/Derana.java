@@ -7,7 +7,7 @@ public class Derana extends NewsPaper {
     public Derana(Connection con) {
         super("http://sinhala.adaderana.lk/news.php?nid=",
             "h2.completeNewsTitle", "p.newsDateStamp", "div.newsContent",
-            6000, 40000, "derana_out.txt", con, "ada_derana"
+            5999, 40000, "derana_out.txt", con, "ada_derana"
         );
     }
 }
