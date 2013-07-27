@@ -1,4 +1,4 @@
-package stc;
+package stm;
 
 public class Main {
 
