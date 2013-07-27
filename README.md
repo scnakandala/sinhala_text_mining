@@ -1,4 +1,4 @@
-sinhala_TC
-==========
+STM
+===
 
-Sinhala Text Classification
+Sinhala Text Mining
