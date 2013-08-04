@@ -40,11 +40,18 @@ public class NewsPaper {
             String query = "select max(articles.id) as max from articles"
                     + " where newspaper ='" + newspaperTitle + "'";
             ResultSet resultset = statement.executeQuery(query);
-            if (resultset.next()) {
-                startId = resultset.getString("max") == null
-                        ? startId : Integer.parseInt(resultset.getString("max"));
-                startId++;
+            resultset.next();
+            Integer max = Integer.parseInt(resultset.getString("max"));
+            if (max != null) {
+                query = "select  link from articles"
+                        + " where id =" + max + "";
+                resultset = statement.executeQuery(query);
+                resultset.next();
+                String str = resultset.getString("link");
+                String[] arr =  str.split("/|=");
+                startId = Integer.parseInt(arr[arr.length-1]);
             }
+            startId++;
         } catch (SQLException ex) {
             Logger.getLogger(NewsPaper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -54,12 +61,12 @@ public class NewsPaper {
         Statement statement;
         try {
             statement = connection.createStatement();
-            String query = "INSERT INTO articles(newspaper, link, title, date, content) VALUES" +
-                    "('" + newspaperTitle + "','" +url + "','" + title +"','" +
-                    date + "','" + content + "');";
+            String query = "INSERT INTO articles(newspaper, link, title, date, content) VALUES"
+                    + "('" + newspaperTitle + "','" + url + "','" + title + "','"
+                    + date + "','" + content + "');";
             statement.executeUpdate(query);
         } catch (SQLException ex) {
             Logger.getLogger(NewsPaper.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        }
     }
 }

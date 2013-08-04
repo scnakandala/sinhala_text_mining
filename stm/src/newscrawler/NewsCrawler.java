@@ -18,13 +18,9 @@ public class NewsCrawler {
     private static Connection connection;
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        // to connect from inside the campus network
-        //System.setProperty("http.proxyHost", "cache.mrt.ac.lk");
-        //System.setProperty("http.proxyPort", "3128");
-        
         Class.forName("com.mysql.jdbc.Driver");
         NewsCrawler.connection = DriverManager
-                .getConnection("jdbc:mysql://localhost/stc?useUnicode=true&characterEncoding=utf-8",
+                .getConnection("jdbc:mysql://localhost/stm?useUnicode=true&characterEncoding=utf-8",
                 "root", "");
 
         Thread t1 = new Thread(new Runnable() {
@@ -66,10 +62,25 @@ public class NewsCrawler {
             }
         });
 
+        Thread t4 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NewsCrawler crawler = new NewsCrawler();
+                NewsPaper paper = new HiruNews(NewsCrawler.connection);
+                try {
+                    crawler.crawl(paper);
+                } catch (IOException ex) {
+                    Logger.getLogger(NewsCrawler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
         ExecutorService executor = Executors.newFixedThreadPool(4);
         executor.execute(t1);
         executor.execute(t2);
         executor.execute(t3);
+        executor.execute(t4);
+
 
         executor.shutdown();
         // Wait until all threads are finish
@@ -79,8 +90,6 @@ public class NewsCrawler {
     }
 
     public void crawl(NewsPaper paper) throws IOException {
-
-        //BufferedWriter writer = new BufferedWriter(new FileWriter(paper.fileName));
 
         for (int i = paper.startId; i <= paper.endId; i++) {
             try {
@@ -118,13 +127,8 @@ public class NewsCrawler {
                     continue;
                 }
 
-                // for file write
-                //String temp = titleS + "\n" + dateS + "\n" + contentS + "\n\n";
-                //writer.write(temp);
-                //writer.flush();
-
                 // for databse write
-                paper.writeToDatabase(paper.baseUrl+i, titleS, dateS, contentS);
+                paper.writeToDatabase(paper.baseUrl + i, titleS, dateS, contentS);
 
                 System.out.println("Valid URL: " + paper.baseUrl + i);
 
@@ -132,8 +136,6 @@ public class NewsCrawler {
                 System.out.println("Invalid URL: " + paper.baseUrl + i);
             }
         }
-
-        //writer.close();
     }
 
     public static String removeTags(String text) {
