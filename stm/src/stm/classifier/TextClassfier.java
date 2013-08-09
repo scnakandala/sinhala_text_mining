@@ -1,7 +1,9 @@
 package stm.classifier;
 
+import java.util.Map;
+
 public interface TextClassfier {
 
-    public String findCategory(String str);
+    public Map<String, Double> findCategory(String str);
     
 }
